@@ -1,0 +1,27 @@
+﻿<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 640 400' role='img' aria-label='示例地图示意图'>
+<line x1='40' y1='40' x2='40' y2='360' stroke='#ffffff' stroke-opacity='0.035'/>
+<line x1='120' y1='40' x2='120' y2='360' stroke='#ffffff' stroke-opacity='0.035'/>
+<line x1='200' y1='40' x2='200' y2='360' stroke='#ffffff' stroke-opacity='0.035'/>
+<line x1='280' y1='40' x2='280' y2='360' stroke='#ffffff' stroke-opacity='0.035'/>
+<line x1='360' y1='40' x2='360' y2='360' stroke='#ffffff' stroke-opacity='0.035'/>
+<line x1='440' y1='40' x2='440' y2='360' stroke='#ffffff' stroke-opacity='0.035'/>
+<line x1='520' y1='40' x2='520' y2='360' stroke='#ffffff' stroke-opacity='0.035'/>
+<line x1='600' y1='40' x2='600' y2='360' stroke='#ffffff' stroke-opacity='0.035'/>
+<line x1='40' y1='40' x2='600' y2='40' stroke='#ffffff' stroke-opacity='0.035'/>
+<line x1='40' y1='120' x2='600' y2='120' stroke='#ffffff' stroke-opacity='0.035'/>
+<line x1='40' y1='200' x2='600' y2='200' stroke='#ffffff' stroke-opacity='0.035'/>
+<line x1='40' y1='280' x2='600' y2='280' stroke='#ffffff' stroke-opacity='0.035'/>
+<line x1='40' y1='360' x2='600' y2='360' stroke='#ffffff' stroke-opacity='0.035'/>
+
+<rect x='40' y='40' width='560' height='320' rx='14' fill='#211a2d'/>
+<rect x='40' y='40' width='560' height='320' rx='14' fill='#211a2d'/>
+<rect x='40' y='150' width='560' height='110' fill='#303b42'/>
+<line x1='40' y1='205' x2='600' y2='205' stroke='#56636b' stroke-width='4'/>
+<rect x='70' y='70' width='140' height='70' fill='#29343a' stroke='#9f7cbe' stroke-width='2'/>
+<rect x='430' y='70' width='140' height='70' fill='#29343a' stroke='#9f7cbe' stroke-width='2'/>
+<rect x='70' y='270' width='140' height='70' fill='#29343a' stroke='#9f7cbe' stroke-width='2'/>
+<rect x='430' y='270' width='140' height='70' fill='#29343a' stroke='#77838b' stroke-width='1.5'/>
+<circle cx='240' cy='205' r='14' fill='#9f7cbe'/>
+<circle cx='360' cy='205' r='14' fill='#aab3bd'/>
+<rect x='40' y='40' width='560' height='320' rx='14' fill='none' stroke='#4b5962' stroke-width='2'/>
+</svg>

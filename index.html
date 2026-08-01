@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="加页手记地图攻略：搜索、筛选并查看第五人格模式地图的识别特征、点位与探索路线。">
+  <title>加页手记地图攻略</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <svg class="icon-defs" aria-hidden="true">
+    <symbol id="icon-search" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="7"></circle>
+      <path d="m20 20-4-4"></path>
+    </symbol>
+    <symbol id="icon-filter" viewBox="0 0 24 24">
+      <path d="M4 6h16M7 12h10M10 18h4"></path>
+    </symbol>
+    <symbol id="icon-close" viewBox="0 0 24 24">
+      <path d="M6 6l12 12M18 6 6 18"></path>
+    </symbol>
+    <symbol id="icon-book" viewBox="0 0 24 24">
+      <path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14H6a2 2 0 0 0-2 2V5Z"></path>
+      <path d="M4 19a2 2 0 0 1 2-2h14"></path>
+    </symbol>
+    <symbol id="icon-chat" viewBox="0 0 24 24">
+      <path d="M4 5h16v11H8l-4 4V5Z"></path>
+    </symbol>
+    <symbol id="icon-shape-right" viewBox="0 0 24 24">
+      <path d="M5 19h8a3 3 0 0 0 3-3V5"></path>
+      <path d="m13 8 3-3 3 3"></path>
+    </symbol>
+    <symbol id="icon-shape-left" viewBox="0 0 24 24">
+      <path d="M19 19h-8a3 3 0 0 1-3-3V5"></path>
+      <path d="m11 8-3-3-3 3"></path>
+    </symbol>
+    <symbol id="icon-shape-left-pu" viewBox="0 0 24 24">
+      <path d="M12 5v14"></path>
+      <path d="M12 8H4"></path>
+    </symbol>
+    <symbol id="icon-shape-t" viewBox="0 0 24 24">
+      <path d="M5 6h14"></path>
+      <path d="M12 6v14"></path>
+    </symbol>
+    <symbol id="icon-shape-cross" viewBox="0 0 24 24">
+      <path d="M12 5v14"></path>
+      <path d="M5 12h14"></path>
+    </symbol>
+    <symbol id="icon-shape-y" viewBox="0 0 24 24">
+      <path d="M12 19v-8"></path>
+      <path d="M12 11 7 5"></path>
+      <path d="m12 11 5-6"></path>
+    </symbol>
+    <symbol id="icon-shape-horizontal" viewBox="0 0 24 24">
+      <path d="M5 12h14"></path>
+    </symbol>
+    <symbol id="icon-shape-vertical" viewBox="0 0 24 24">
+      <path d="M12 5v14"></path>
+    </symbol>
+  </svg>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#map-guide" aria-label="加页手记地图攻略首页">
+        <svg aria-hidden="true"><use href="#icon-book"></use></svg>
+        <span>加页手记地图攻略</span>
+      </a>
+      <nav class="site-nav" aria-label="主导航">
+        <a href="#map-guide">地图图鉴</a>
+        <a href="#mode-guide">模式指南</a>
+        <button type="button" data-forum-link>
+          <svg aria-hidden="true"><use href="#icon-chat"></use></svg>
+          论坛筹备中
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section id="map-guide" class="intro" aria-labelledby="pageTitle">
+      <div class="intro__text-block">
+        <p class="eyebrow">加页手记 · 地图图鉴</p>
+        <h1 id="pageTitle">在模式里快速认出当前地图</h1>
+        <p class="intro__copy">通过地形、标志物、难度和关键词筛选地图，点开卡片查看识别特征、关键点位、道具与探索路线。第一版内容为示例资料，后续可以替换成正式攻略。</p>
+        <div class="intro__stats" aria-label="站点信息">
+          <span>12 张示例地图</span>
+          <span>搜索 + 特征筛选</span>
+          <span>手机与桌面适配</span>
+        </div>
+      </div>
+    </section>
+
+    <details id="mode-guide" class="mode-guide">
+      <summary>
+        <span class="mode-guide__eyebrow">模式指南</span>
+        <strong>加页手记模式怎么看</strong>
+        <span class="mode-guide__tag">示例资料</span>
+      </summary>
+      <div class="mode-guide__body">
+        <p>这里先用一段简短说明解释模式里的地图信息结构。正式版可以替换为“加页手记”的实际规则、入口和探索目标。</p>
+        <ul>
+          <li>先通过地图特征判断类型，再查看点位与路线。</li>
+          <li>进入游戏后，优先确认明显标志物、出口方向和可交互物。</li>
+          <li>攻略只作为探索参考，正式内容应由玩家验证后补充。</li>
+        </ul>
+      </div>
+    </details>
+
+    <section class="toolbar" aria-label="搜索与筛选">
+      <form class="search-box" role="search" onsubmit="return false">
+        <svg aria-hidden="true"><use href="#icon-search"></use></svg>
+        <label class="sr-only" for="mapSearch">搜索地图</label>
+        <input id="mapSearch" type="search" placeholder="搜索地图、地形、标志物..." autocomplete="off">
+        <button class="icon-button" id="clearSearch" type="button" aria-label="清空搜索">
+          <svg aria-hidden="true"><use href="#icon-close"></use></svg>
+        </button>
+      </form>
+
+      <div class="filter-groups">
+        <div class="filter-group">
+          <span class="filter-label">侧门形状</span>
+          <div class="chip-row" id="terrainFilters" aria-label="按地形筛选"></div>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">难度</span>
+          <div class="chip-row" id="difficultyFilters" aria-label="按难度筛选"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="map-library" aria-labelledby="libraryTitle">
+      <div class="section-heading">
+        <h2 id="libraryTitle">地图图鉴</h2>
+        <div class="result-meta">
+          <p id="resultCount" aria-live="polite">正在加载地图...</p>
+          <button class="text-button" id="resetFilters" type="button" hidden>清除筛选</button>
+        </div>
+      </div>
+      <div class="map-grid" id="mapGrid" aria-label="地图卡片列表"></div>
+    </section>
+
+    <section id="forum" class="forum-band" aria-labelledby="forumTitle">
+      <div>
+        <p class="eyebrow">未来规划</p>
+        <h2 id="forumTitle">游戏攻略论坛</h2>
+        <p>第一版先专注地图攻略。论坛板块已经预留位置，后续可以加入攻略投稿、讨论区和收藏功能。</p>
+      </div>
+      <button class="primary-button" type="button" data-forum-link>
+        <svg aria-hidden="true"><use href="#icon-chat"></use></svg>
+        论坛筹备中
+      </button>
+    </section>
+  </main>
+
+  <div class="detail-overlay" id="detailOverlay" hidden></div>
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <footer class="site-footer">
+    <p>加页手记地图攻略 · 示例资料站</p>
+    <p>攻略内容仅作探索参考，正式资料请以游戏内实际内容为准。</p>
+  </footer>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
