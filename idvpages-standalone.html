@@ -1164,7 +1164,7 @@ h1 {
       <nav class="site-nav" aria-label="主导航">
         <a href="#map-guide">地图图鉴</a>
         <a href="#mode-guide">模式指南</a>
-        <button type="button" data-mapping-open>
+        <button type="button" data-mapping-v2-open>
           <svg aria-hidden="true"><use href="#icon-map"></use></svg>
           地图映射
         </button>
@@ -1253,34 +1253,30 @@ h1 {
   </main>
 
   <div class="detail-overlay" id="detailOverlay" hidden></div>
-  <div class="mapping-panel" id="mappingPanel" hidden>
-    <div class="mapping-panel__head" id="mappingDragHandle">
+  <div class="mapping-panel" id="mappingV2Panel" hidden>
+    <div class="mapping-panel__head" id="mappingV2DragHandle">
       <svg class="mapping-panel__grip" aria-hidden="true"><use href="#icon-grip"></use></svg>
       <span class="mapping-panel__title">地图映射</span>
-      <button class="icon-button" type="button" data-mapping-prev title="上一张" aria-label="上一张地图">
+      <button class="icon-button" type="button" data-mapping-v2-prev title="上一张" aria-label="上一张地图">
         <svg aria-hidden="true"><use href="#icon-previous"></use></svg>
       </button>
-      <button class="icon-button" type="button" data-mapping-next title="下一张" aria-label="下一张地图">
+      <button class="icon-button" type="button" data-mapping-v2-next title="下一张" aria-label="下一张地图">
         <svg aria-hidden="true"><use href="#icon-next"></use></svg>
       </button>
-      <button class="icon-button" type="button" data-mapping-pip title="悬浮窗模式" aria-label="打开悬浮窗模式">
+      <button class="icon-button" type="button" data-mapping-v2-pip title="悬浮窗模式" aria-label="打开悬浮窗模式">
         <svg aria-hidden="true"><use href="#icon-pip"></use></svg>
       </button>
-      <button class="icon-button" type="button" data-mapping-close title="关闭" aria-label="关闭地图映射">
+      <button class="icon-button" type="button" data-mapping-v2-close title="关闭" aria-label="关闭地图映射">
         <svg aria-hidden="true"><use href="#icon-close"></use></svg>
       </button>
     </div>
     <div class="mapping-panel__body">
-      <img id="mappingImage" alt="地图映射图片">
+      <img id="mappingV2Image" alt="地图映射图片">
     </div>
     <div class="mapping-panel__controls">
       <label class="mapping-control">
         <svg aria-hidden="true"><use href="#icon-opacity"></use></svg>
-        <input id="mappingOpacity" type="range" min="35" max="100" value="85" aria-label="调整透明度">
-      </label>
-      <label class="mapping-control">
-        <svg aria-hidden="true"><use href="#icon-size"></use></svg>
-        <input id="mappingSize" type="range" min="60" max="140" value="100" aria-label="调整面板大小">
+        <input id="mappingV2Opacity" type="range" min="35" max="100" value="85" aria-label="调整透明度">
       </label>
     </div>
   </div>
@@ -1629,75 +1625,57 @@ window.MAP_GUIDE_DATA = [
 </script>
   <script>
 (function () {
-  const MAPS = window.MAP_GUIDE_DATA || [];
-  const state = {
+  "use strict";
+
+  var MAPS = window.MAP_GUIDE_DATA || [];
+  var SHAPE_ORDER = ["右拐┐", "左拐└", "左卜", "正T型", "十字", "分叉Y型", "横杠—", "竖条丨"];
+  var DIFFICULTY_ORDER = ["新手", "简单", "普通", "困难", "噩梦"];
+  var SHAPE_LABELS = {
+    "右拐┐": "右拐",
+    "左拐└": "左拐",
+    "左卜": "左卜",
+    "正T型": "正T型",
+    "十字": "十字",
+    "分叉Y型": "分叉Y型",
+    "横杠—": "横杠",
+    "竖条丨": "竖条"
+  };
+  var SHAPE_ICONS = {
+    "右拐┐": "icon-shape-right",
+    "左拐└": "icon-shape-left",
+    "左卜": "icon-shape-left-pu",
+    "正T型": "icon-shape-t",
+    "十字": "icon-shape-cross",
+    "分叉Y型": "icon-shape-y",
+    "横杠—": "icon-shape-horizontal",
+    "竖条丨": "icon-shape-vertical"
+  };
+
+  var state = {
     query: "",
-    terrain: "",
+    shape: "",
     difficulty: ""
   };
-  const SHAPE_ORDER = ["右拐┐", "左拐└", "左卜", "正T型", "十字", "分叉Y型", "横杠—", "竖条丨"];
-  const DIFFICULTY_ORDER = ["新手", "简单", "普通", "困难", "噩梦"];
-  const SHAPE_META = {
-    "右拐┐": { label: "右拐", icon: "icon-shape-right" },
-    "左拐└": { label: "左拐", icon: "icon-shape-left" },
-    "左卜": { label: "左卜", icon: "icon-shape-left-pu" },
-    "正T型": { label: "正T型", icon: "icon-shape-t" },
-    "十字": { label: "十字", icon: "icon-shape-cross" },
-    "分叉Y型": { label: "分叉Y型", icon: "icon-shape-y" },
-    "横杠—": { label: "横杠", icon: "icon-shape-horizontal" },
-    "竖条丨": { label: "竖条", icon: "icon-shape-vertical" }
+
+  var mappingState = {
+    index: 0,
+    opacity: 0.85,
+    visible: false
   };
 
-  const grid = document.getElementById("mapGrid");
-  const resultCount = document.getElementById("resultCount");
-  const searchInput = document.getElementById("mapSearch");
-  const clearSearch = document.getElementById("clearSearch");
-  const terrainFilters = document.getElementById("terrainFilters");
-  const difficultyFilters = document.getElementById("difficultyFilters");
-  const resetFilters = document.getElementById("resetFilters");
-  const overlay = document.getElementById("detailOverlay");
-  const toast = document.getElementById("toast");
-  const mappingPanel = document.getElementById("mappingPanel");
-  const mappingDragHandle = document.getElementById("mappingDragHandle");
-  const mappingImage = document.getElementById("mappingImage");
-  const mappingOpacity = document.getElementById("mappingOpacity");
-  const mappingSize = document.getElementById("mappingSize");
-  const mappingState = {
-    mapId: null,
-    opacity: 85,
-    size: 100
-  };
-
-  function storedMappingValue(key, fallback) {
-    try {
-      const value = Number(window.localStorage.getItem(key));
-      return Number.isFinite(value) ? value : fallback;
-    } catch (error) {
-      return fallback;
-    }
-  }
-
-  mappingState.opacity = storedMappingValue("idvpages-map-opacity", 85);
-  mappingState.size = storedMappingValue("idvpages-map-size", 100);
-  mappingState.mapId = (function () {
-    try {
-      return window.localStorage.getItem("idvpages-map-id");
-    } catch (error) {
-      return null;
-    }
-  }());
-
-  function saveMappingState() {
-    try {
-      window.localStorage.setItem("idvpages-map-opacity", String(mappingState.opacity));
-      window.localStorage.setItem("idvpages-map-size", String(mappingState.size));
-      if (mappingState.mapId) {
-        window.localStorage.setItem("idvpages-map-id", mappingState.mapId);
-      }
-    } catch (error) {
-      // Local storage may be unavailable; the mapping panel still works in memory.
-    }
-  }
+  var grid = document.getElementById("mapGrid");
+  var resultCount = document.getElementById("resultCount");
+  var searchInput = document.getElementById("mapSearch");
+  var clearSearch = document.getElementById("clearSearch");
+  var shapeFilters = document.getElementById("terrainFilters");
+  var difficultyFilters = document.getElementById("difficultyFilters");
+  var resetFilters = document.getElementById("resetFilters");
+  var detailOverlay = document.getElementById("detailOverlay");
+  var toast = document.getElementById("toast");
+  var mappingPanel = document.getElementById("mappingV2Panel");
+  var mappingImage = document.getElementById("mappingV2Image");
+  var mappingOpacity = document.getElementById("mappingV2Opacity");
+  var mappingDragHandle = document.getElementById("mappingV2DragHandle");
 
   function escapeHtml(value) {
     return String(value).replace(/[&<>"']/g, function (char) {
@@ -1711,110 +1689,89 @@ window.MAP_GUIDE_DATA = [
     });
   }
 
-  function unique(values, preferredOrder) {
-    const valuesSet = new Set(values.filter(Boolean));
-    const items = Array.from(valuesSet);
-    if (preferredOrder) {
-      const ordered = preferredOrder.filter(function (value) {
-        return valuesSet.has(value);
-      });
-      const remaining = items.filter(function (value) {
-        return !preferredOrder.includes(value);
-      }).sort(function (a, b) {
-        return a.localeCompare(b, "zh-CN");
-      });
-      return ordered.concat(remaining);
+  function uniqueValues(values, order) {
+    var set = new Set(values.filter(Boolean));
+    var list = Array.from(set);
+    if (order) {
+      return order.filter(function (value) { return set.has(value); }).concat(
+        list.filter(function (value) { return order.indexOf(value) === -1; }).sort(function (a, b) {
+          return a.localeCompare(b, "zh-CN");
+        })
+      );
     }
-    return items.sort(function (a, b) {
-      return a.localeCompare(b, "zh-CN");
-    });
-  }
-
-  function shapeMeta(type) {
-    return SHAPE_META[type] || { label: type, icon: "" };
-  }
-
-  function shapeIcon(type) {
-    const meta = shapeMeta(type);
-    if (!meta.icon) {
-      return "";
-    }
-    return '<svg class="shape-icon" aria-hidden="true"><use href="#' + meta.icon + '"></use></svg>';
+    return list.sort(function (a, b) { return a.localeCompare(b, "zh-CN"); });
   }
 
   function shapeLabel(type) {
-    return shapeMeta(type).label;
+    return SHAPE_LABELS[type] || type;
   }
 
-  function isDefaultState() {
-    return !state.query && !state.terrain && !state.difficulty;
-  }
-
-  function matches(map) {
-    const query = state.query.trim().toLowerCase();
-    const searchText = [
-      map.name,
-      map.type,
-      map.description,
-      map.traits.join(" "),
-      map.landmarks.join(" ")
-    ].join(" ").toLowerCase();
-
-    const queryOk = !query || searchText.includes(query);
-    const terrainOk = !state.terrain || map.type === state.terrain;
-    const difficultyOk = !state.difficulty || map.difficulty === state.difficulty;
-    return queryOk && terrainOk && difficultyOk;
-  }
-
-  function filteredMaps() {
-    return MAPS.filter(matches);
+  function shapeIcon(type) {
+    var icon = SHAPE_ICONS[type];
+    return icon ? '<svg class="shape-icon" aria-hidden="true"><use href="#' + icon + '"></use></svg>' : "";
   }
 
   function mapImage(map, index) {
     return map.image || "assets/maps/map-" + String(index + 1).padStart(2, "0") + ".svg";
   }
 
+  function mapMatches(map) {
+    var query = state.query.trim().toLowerCase();
+    var searchText = [map.name, map.type, map.description, map.traits.join(" ")].join(" ").toLowerCase();
+    return (
+      (!query || searchText.indexOf(query) !== -1) &&
+      (!state.shape || map.type === state.shape) &&
+      (!state.difficulty || map.difficulty === state.difficulty)
+    );
+  }
+
+  function filteredMaps() {
+    return MAPS.filter(mapMatches);
+  }
+
+  function isDefaultState() {
+    return !state.query && !state.shape && !state.difficulty;
+  }
+
   function cardHTML(map, index) {
-    const image = mapImage(map, index);
-    const mediaLabel = "地图图片 " + String(index + 1).padStart(2, "0");
+    var label = "地图图片 " + String(index + 1).padStart(2, "0");
     return (
       '<button class="map-card" type="button" data-map-id="' + escapeHtml(map.id) + '" style="--card-accent:' + escapeHtml(map.accent) + '">' +
-        '<span class="map-card__media">' +
-          '<img src="' + escapeHtml(image) + '" alt="' + escapeHtml(mediaLabel) + '" loading="eager">' +
-        "</span>" +
+        '<span class="map-card__media"><img src="' + escapeHtml(mapImage(map, index)) + '" alt="' + escapeHtml(label) + '" loading="eager"></span>' +
         '<span class="map-card__body"><span class="map-card__difficulty">' + escapeHtml(map.difficulty) + "难度</span></span>" +
       "</button>"
     );
   }
 
-  function emptyHTML() {
-    return (
-      '<div class="empty-state">' +
-        "<p>没有找到匹配的地图</p>" +
-        "<p>试试清除筛选，或换个关键词。</p>" +
-      "</div>"
-    );
-  }
-
   function renderFilters() {
-    const terrains = unique(MAPS.map(function (map) { return map.type; }), SHAPE_ORDER);
-    const difficulties = DIFFICULTY_ORDER;
-
-    terrainFilters.innerHTML = terrains.map(function (terrain) {
-      return '<button type="button" class="chip" data-terrain="' + escapeHtml(terrain) + '" aria-pressed="' + (state.terrain === terrain ? "true" : "false") + '"><span>' + escapeHtml(shapeLabel(terrain)) + "</span>" + shapeIcon(terrain) + "</button>";
+    shapeFilters.innerHTML = uniqueValues(MAPS.map(function (map) { return map.type; }), SHAPE_ORDER).map(function (type) {
+      return (
+        '<button type="button" class="chip" data-shape="' + escapeHtml(type) + '" aria-pressed="' + (state.shape === type ? "true" : "false") + '">' +
+          "<span>" + escapeHtml(shapeLabel(type)) + "</span>" + shapeIcon(type) +
+        "</button>"
+      );
     }).join("");
 
-    difficultyFilters.innerHTML = difficulties.map(function (difficulty) {
-      return '<button type="button" class="chip" data-difficulty="' + escapeHtml(difficulty) + '" aria-pressed="' + (state.difficulty === difficulty ? "true" : "false") + '">' + escapeHtml(difficulty) + "</button>";
+    difficultyFilters.innerHTML = DIFFICULTY_ORDER.map(function (difficulty) {
+      return (
+        '<button type="button" class="chip" data-difficulty="' + escapeHtml(difficulty) + '" aria-pressed="' + (state.difficulty === difficulty ? "true" : "false") + '">' +
+          escapeHtml(difficulty) +
+        "</button>"
+      );
     }).join("");
   }
 
   function renderGrid() {
-    const result = filteredMaps();
+    var result = filteredMaps();
     resultCount.textContent = "找到 " + result.length + " 张地图";
-    grid.innerHTML = result.length ? result.map(cardHTML).join("") : emptyHTML();
     resetFilters.hidden = isDefaultState();
 
+    if (!result.length) {
+      grid.innerHTML = '<div class="empty-state"><p>没有找到匹配的地图</p><p>试试清除筛选，或换个关键词。</p></div>';
+      return;
+    }
+
+    grid.innerHTML = result.map(cardHTML).join("");
     grid.querySelectorAll("[data-map-id]").forEach(function (button) {
       button.addEventListener("click", function () {
         openDetail(button.dataset.mapId);
@@ -1832,83 +1789,80 @@ window.MAP_GUIDE_DATA = [
   }
 
   function openDetail(id) {
-    const map = MAPS.find(function (item) { return item.id === id; });
+    var map = MAPS.find(function (item) { return item.id === id; });
     if (!map) {
       return;
     }
-
-    overlay.innerHTML =
+    var index = MAPS.indexOf(map);
+    detailOverlay.innerHTML =
       '<article class="detail-panel" role="dialog" aria-modal="true" aria-labelledby="detailTitle">' +
-        '<button class="detail-close icon-button" type="button" aria-label="关闭详情"><svg aria-hidden="true"><use href="#icon-close"></use></svg></button>' +
+        '<button class="detail-close icon-button" type="button" data-close-detail aria-label="关闭"><svg aria-hidden="true"><use href="#icon-close"></use></svg></button>' +
         '<h2 id="detailTitle" class="sr-only">地图图片</h2>' +
-        '<img class="detail-image" src="' + escapeHtml(mapImage(map, MAPS.indexOf(map))) + '" alt="地图图片">' +
+        '<img class="detail-image" src="' + escapeHtml(mapImage(map, index)) + '" alt="地图图片">' +
         '<div class="detail-actions"><button class="primary-button" type="button" data-map-mapping="' + escapeHtml(map.id) + '"><svg aria-hidden="true"><use href="#icon-map"></use></svg>映射此图</button></div>' +
       "</article>";
-
-    overlay.hidden = false;
+    detailOverlay.hidden = false;
     document.body.classList.add("no-scroll");
-    const closeButton = overlay.querySelector(".detail-close");
+
+    var closeButton = detailOverlay.querySelector("[data-close-detail]");
     if (closeButton) {
       closeButton.addEventListener("click", closeDetail);
       closeButton.focus();
     }
-    const mapButton = overlay.querySelector("[data-map-mapping]");
+
+    var mapButton = detailOverlay.querySelector("[data-map-mapping]");
     if (mapButton) {
       mapButton.addEventListener("click", function () {
-        const targetId = mapButton.dataset.mapMapping;
         closeDetail();
-        openMapping(targetId);
+        openMapping(mapButton.dataset.mapMapping);
       });
     }
   }
 
   function closeDetail() {
-    overlay.hidden = true;
-    overlay.innerHTML = "";
+    detailOverlay.hidden = true;
+    detailOverlay.innerHTML = "";
     document.body.classList.remove("no-scroll");
   }
 
-  function currentMappingMap() {
-    return MAPS.find(function (map) {
-      return map.id === mappingState.mapId;
-    }) || MAPS[0];
+  function currentMap() {
+    return MAPS[mappingState.index] || MAPS[0];
   }
 
   function renderMapping() {
-    const map = currentMappingMap();
+    var map = currentMap();
     if (!map) {
       return;
     }
-    mappingState.mapId = map.id;
-    mappingImage.src = mapImage(map, MAPS.indexOf(map));
-    mappingImage.alt = "地图映射图片 " + String(MAPS.indexOf(map) + 1).padStart(2, "0");
-    mappingImage.style.opacity = String(mappingState.opacity / 100);
-    mappingPanel.style.setProperty("--mapping-width", String(Math.round(300 * mappingState.size / 100)) + "px");
-    mappingOpacity.value = String(mappingState.opacity);
-    mappingSize.value = String(mappingState.size);
-    saveMappingState();
+    mappingState.index = MAPS.indexOf(map);
+    mappingImage.src = mapImage(map, mappingState.index);
+    mappingImage.alt = "地图映射图片 " + String(mappingState.index + 1).padStart(2, "0");
+    mappingImage.style.opacity = String(mappingState.opacity);
+    mappingOpacity.value = String(Math.round(mappingState.opacity * 100));
   }
 
   function openMapping(id) {
     if (id) {
-      mappingState.mapId = id;
-    }
-    if (!MAPS.length) {
-      return;
+      var found = MAPS.findIndex(function (map) { return map.id === id; });
+      if (found !== -1) {
+        mappingState.index = found;
+      }
     }
     mappingPanel.hidden = false;
+    mappingState.visible = true;
     renderMapping();
   }
 
   function closeMapping() {
     mappingPanel.hidden = true;
+    mappingState.visible = false;
   }
 
   function toggleMapping(id) {
-    if (mappingPanel.hidden) {
-      openMapping(id);
-    } else {
+    if (mappingState.visible) {
       closeMapping();
+    } else {
+      openMapping(id);
     }
   }
 
@@ -1916,238 +1870,191 @@ window.MAP_GUIDE_DATA = [
     if (!MAPS.length) {
       return;
     }
-    const index = MAPS.indexOf(currentMappingMap());
-    const next = (index + direction + MAPS.length) % MAPS.length;
-    mappingState.mapId = MAPS[next].id;
+    mappingState.index = (mappingState.index + direction + MAPS.length) % MAPS.length;
     renderMapping();
   }
 
-  function collectCss() {
-    let cssText = "";
-    for (const sheet of document.styleSheets) {
-      try {
-        for (const rule of sheet.cssRules) {
-          cssText += rule.cssText + "\n";
-        }
-      } catch (error) {
-        // Cross-origin style rules cannot be read; fall back to the remaining CSS.
-      }
-    }
-    return cssText;
-  }
-
-  function mappingOverlayData() {
-    const map = currentMappingMap();
-    return {
-      maps: MAPS.map(function (item, index) {
-      return {
-        src: new URL(mapImage(item, index), document.baseURI).href,
-        difficulty: item.difficulty,
-        type: shapeLabel(item.type)
-      };
-      }),
-      startIndex: Math.max(0, MAPS.indexOf(map))
-    };
-  }
-
-  function mappingOverlayHtml(maps, startIndex) {
-    const pipHtml =
-      '<div class="mapping-panel pip-panel">' +
-        '<div class="mapping-panel__head">' +
-          '<span class="mapping-panel__title">地图映射</span>' +
-          '<button class="icon-button" type="button" id="pipPrev" title="上一张" aria-label="上一张地图"><svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"></path></svg></button>' +
-          '<button class="icon-button" type="button" id="pipNext" title="下一张" aria-label="下一张地图"><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"></path></svg></button>' +
-          '<button class="icon-button" type="button" id="pipClose" title="关闭" aria-label="关闭悬浮窗"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>' +
-        "</div>" +
-        '<div class="mapping-panel__body"><img id="pipImage" alt="地图映射图片"></div>' +
-        '<div class="mapping-panel__controls">' +
-          '<label class="mapping-control"><svg viewBox="0 0 24 24"><path d="M12 3c3 3.8 6 7 6 10a6 6 0 1 1-12 0c0-3 3-6.2 6-10Z"></path></svg><input id="pipOpacity" type="range" min="35" max="100" value="85" aria-label="调整透明度"></label>' +
-        "</div>" +
-      "</div>";
-    return pipHtml;
-  }
-
-  function mappingOverlayScript(maps, startIndex) {
-    return "(function(){var maps=" + JSON.stringify(maps) + ";var index=" + startIndex + ";var opacity=" + (mappingState.opacity / 100) + ";var image=document.getElementById('pipImage');var prev=document.getElementById('pipPrev');var next=document.getElementById('pipNext');var close=document.getElementById('pipClose');var opacityInput=document.getElementById('pipOpacity');function render(){image.src=maps[index].src;image.alt='地图映射图片 '+(index+1);image.style.opacity=opacity;}prev.addEventListener('click',function(){index=(index-1+maps.length)%maps.length;render();});next.addEventListener('click',function(){index=(index+1)%maps.length;render();});opacityInput.addEventListener('input',function(){opacity=Number(opacityInput.value)/100;image.style.opacity=opacity;});close.addEventListener('click',function(){window.close();});render();})();";
-  }
-
-  function mappingOverlayCss() {
-    return collectCss() +
-      ".pip-panel{position:fixed;inset:0;right:auto;bottom:auto;width:100vw;height:100vh;max-height:none;border-radius:0;display:flex;flex-direction:column}" +
-      ".pip-panel .mapping-panel__body{flex:1;max-height:none;overflow:hidden}" +
-      ".pip-panel .mapping-panel__body img{width:100%;height:100%;max-height:none;object-fit:contain}" +
-      ".pip-panel .mapping-panel__controls{flex:none}" +
-      ".pip-panel button svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}";
-  }
-
-  function openMappingPopup() {
-    const data = mappingOverlayData();
-    let popup = null;
-    try {
-      popup = window.open("", "idvMapOverlay", "popup,width=400,height=720,top=90,left=90");
-    } catch (error) {
-      popup = null;
-    }
-    if (!popup) {
-      openMapping();
-      showToast("浏览器阻止了悬浮窗，已打开页面映射面板");
-      return;
-    }
-    popup.document.open();
-    popup.document.write("<!doctype html><html><head><meta charset=\"utf-8\"><title>地图映射</title></head><body>");
-    const style = popup.document.createElement("style");
-    style.textContent = mappingOverlayCss();
-    popup.document.head.appendChild(style);
-    popup.document.body.insertAdjacentHTML("beforeend", mappingOverlayHtml(data.maps, data.startIndex));
-    const script = popup.document.createElement("script");
-    script.textContent = mappingOverlayScript(data.maps, data.startIndex);
-    popup.document.body.appendChild(script);
-    popup.document.close();
-    closeMapping();
-  }
-
-  function openMappingFallbackModal() {
-    const map = currentMappingMap();
-    const startIndex = Math.max(0, MAPS.indexOf(map));
-    const src = new URL(mapImage(map, startIndex), document.baseURI).href;
-
-    overlay.innerHTML =
-      '<article class="detail-panel mapping-fallback" role="dialog" aria-modal="true" aria-labelledby="mappingFallbackTitle">' +
-        '<button class="detail-close icon-button" type="button" data-fallback-close aria-label="关闭"><svg aria-hidden="true"><use href="#icon-close"></use></svg></button>' +
-        '<div class="mapping-fallback__head">' +
-          '<h2 id="mappingFallbackTitle">地图映射</h2>' +
-          '<span>当前浏览器不支持置顶悬浮窗，已打开页面内映射</span>' +
-        "</div>" +
-        '<img class="detail-image" id="fallbackImage" alt="地图映射图片">' +
-        '<div class="mapping-fallback__controls">' +
-          '<button class="icon-button" type="button" data-fallback-prev aria-label="上一张"><svg aria-hidden="true"><use href="#icon-previous"></use></svg></button>' +
-          '<input id="fallbackOpacity" type="range" min="35" max="100" value="' + mappingState.opacity + '" aria-label="调整透明度">' +
-          '<button class="icon-button" type="button" data-fallback-next aria-label="下一张"><svg aria-hidden="true"><use href="#icon-next"></use></svg></button>' +
-        "</div>" +
-      "</article>";
-
-    overlay.hidden = false;
-    document.body.classList.add("no-scroll");
-
-    const image = overlay.querySelector("#fallbackImage");
-    const opacityInput = overlay.querySelector("#fallbackOpacity");
-    let index = startIndex;
-
-    function renderFallback() {
-      const item = MAPS[index];
-      image.src = new URL(mapImage(item, index), document.baseURI).href;
-      image.alt = "地图映射图片 " + String(index + 1).padStart(2, "0");
-      image.style.opacity = String(mappingState.opacity / 100);
-      opacityInput.value = String(mappingState.opacity);
-    }
-
-    renderFallback();
-
-    overlay.querySelector("[data-fallback-close]").addEventListener("click", closeDetail);
-    overlay.querySelector("[data-fallback-prev]").addEventListener("click", function () {
-      index = (index - 1 + MAPS.length) % MAPS.length;
-      renderFallback();
-    });
-    overlay.querySelector("[data-fallback-next]").addEventListener("click", function () {
-      index = (index + 1) % MAPS.length;
-      renderFallback();
-    });
-    opacityInput.addEventListener("input", function () {
-      mappingState.opacity = Number(opacityInput.value);
-      image.style.opacity = String(mappingState.opacity / 100);
-      saveMappingState();
-    });
-  }
-
-  function openMappingPip() {
-    const data = mappingOverlayData();
-    if (!window.documentPictureInPicture || typeof window.documentPictureInPicture.requestWindow !== "function") {
-      openMappingFallbackModal();
-      return;
-    }
-
-    window.documentPictureInPicture.requestWindow({ width: 380, height: 680 }).then(function (pipWindow) {
-      const style = pipWindow.document.createElement("style");
-      style.textContent = mappingOverlayCss();
-      pipWindow.document.head.appendChild(style);
-      pipWindow.document.body.innerHTML = mappingOverlayHtml(data.maps, data.startIndex);
-
-      const script = pipWindow.document.createElement("script");
-      script.textContent = mappingOverlayScript(data.maps, data.startIndex);
-      pipWindow.document.body.appendChild(script);
-      closeMapping();
-    }).catch(function () {
-      openMappingFallbackModal();
-    });
-  }
-
-  mappingPanel.querySelector("[data-mapping-prev]").addEventListener("click", function () {
+  mappingPanel.querySelector("[data-mapping-v2-prev]").addEventListener("click", function () {
     cycleMapping(-1);
   });
-  mappingPanel.querySelector("[data-mapping-next]").addEventListener("click", function () {
+  mappingPanel.querySelector("[data-mapping-v2-next]").addEventListener("click", function () {
     cycleMapping(1);
   });
-  mappingPanel.querySelector("[data-mapping-pip]").addEventListener("click", openMappingPip);
-  mappingPanel.querySelector("[data-mapping-close]").addEventListener("click", closeMapping);
+  mappingPanel.querySelector("[data-mapping-v2-close]").addEventListener("click", closeMapping);
+  mappingPanel.querySelector("[data-mapping-v2-pip]").addEventListener("click", openFloatingMapping);
 
   mappingOpacity.addEventListener("input", function () {
-    mappingState.opacity = Number(mappingOpacity.value);
-    mappingImage.style.opacity = String(mappingState.opacity / 100);
-    saveMappingState();
+    mappingState.opacity = Number(mappingOpacity.value) / 100;
+    mappingImage.style.opacity = String(mappingState.opacity);
   });
 
-  mappingSize.addEventListener("input", function () {
-    mappingState.size = Number(mappingSize.value);
-    mappingPanel.style.setProperty("--mapping-width", String(Math.round(300 * mappingState.size / 100)) + "px");
-    saveMappingState();
-  });
-
-  document.querySelectorAll("[data-mapping-open]").forEach(function (button) {
+  document.querySelectorAll("[data-mapping-v2-open]").forEach(function (button) {
     button.addEventListener("click", function () {
-      toggleMapping(currentMappingMap().id);
+      toggleMapping(currentMap().id);
     });
   });
 
-  let dragState = null;
+  var dragData = null;
   mappingDragHandle.addEventListener("pointerdown", function (event) {
     if (event.target.closest("button")) {
       return;
     }
-    const rect = mappingPanel.getBoundingClientRect();
-    dragState = {
+    var rect = mappingPanel.getBoundingClientRect();
+    dragData = {
       pointerId: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
-      originLeft: rect.left,
-      originTop: rect.top
+      left: rect.left,
+      top: rect.top
     };
     mappingDragHandle.setPointerCapture(event.pointerId);
   });
 
   mappingDragHandle.addEventListener("pointermove", function (event) {
-    if (!dragState || event.pointerId !== dragState.pointerId) {
+    if (!dragData || event.pointerId !== dragData.pointerId) {
       return;
     }
     event.preventDefault();
-    const nextLeft = dragState.originLeft + event.clientX - dragState.startX;
-    const nextTop = dragState.originTop + event.clientY - dragState.startY;
-    const maxLeft = Math.max(8, window.innerWidth - mappingPanel.offsetWidth - 8);
-    const maxTop = Math.max(8, window.innerHeight - mappingPanel.offsetHeight - 8);
+    var left = dragData.left + event.clientX - dragData.startX;
+    var top = dragData.top + event.clientY - dragData.startY;
+    left = Math.min(Math.max(8, left), window.innerWidth - mappingPanel.offsetWidth - 8);
+    top = Math.min(Math.max(8, top), window.innerHeight - mappingPanel.offsetHeight - 8);
     mappingPanel.style.right = "auto";
     mappingPanel.style.bottom = "auto";
-    mappingPanel.style.left = String(Math.min(Math.max(8, nextLeft), maxLeft)) + "px";
-    mappingPanel.style.top = String(Math.min(Math.max(8, nextTop), maxTop)) + "px";
+    mappingPanel.style.left = left + "px";
+    mappingPanel.style.top = top + "px";
   });
 
-  function endMappingDrag(event) {
-    if (!dragState || event.pointerId !== dragState.pointerId) {
-      return;
+  function endDrag(event) {
+    if (dragData && event.pointerId === dragData.pointerId) {
+      dragData = null;
     }
-    dragState = null;
   }
 
-  mappingDragHandle.addEventListener("pointerup", endMappingDrag);
-  mappingDragHandle.addEventListener("pointercancel", endMappingDrag);
+  mappingDragHandle.addEventListener("pointerup", endDrag);
+  mappingDragHandle.addEventListener("pointercancel", endDrag);
+
+  function collectCss() {
+    var cssText = "";
+    Array.prototype.forEach.call(document.styleSheets, function (sheet) {
+      try {
+        Array.prototype.forEach.call(sheet.cssRules, function (rule) {
+          cssText += rule.cssText + "\n";
+        });
+      } catch (error) {
+        // Ignore cross-origin stylesheets.
+      }
+    });
+    return cssText;
+  }
+
+  function overlayData() {
+    return MAPS.map(function (map, index) {
+      return {
+        src: new URL(mapImage(map, index), document.baseURI).href,
+        difficulty: map.difficulty,
+        type: shapeLabel(map.type)
+      };
+    });
+  }
+
+  function overlayHtml(maps, startIndex) {
+    return (
+      '<div class="mapping-panel pip-panel">' +
+        '<div class="mapping-panel__head">' +
+          '<span class="mapping-panel__title">地图映射</span>' +
+          '<button class="icon-button" type="button" id="pipPrev" aria-label="上一张"><svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"></path></svg></button>' +
+          '<button class="icon-button" type="button" id="pipNext" aria-label="下一张"><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"></path></svg></button>' +
+          '<button class="icon-button" type="button" id="pipClose" aria-label="关闭"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>' +
+        "</div>" +
+        '<div class="mapping-panel__body"><img id="pipImage" alt="地图映射图片"></div>' +
+        '<div class="mapping-panel__controls">' +
+          '<label class="mapping-control"><svg viewBox="0 0 24 24"><path d="M12 3c3 3.8 6 7 6 10a6 6 0 1 1-12 0c0-3 3-6.2 6-10Z"></path></svg><input id="pipOpacity" type="range" min="35" max="100" value="' + Math.round(mappingState.opacity * 100) + '" aria-label="调整透明度"></label>' +
+        "</div>" +
+      "</div>"
+    );
+  }
+
+  function overlayScript(maps, startIndex) {
+    return "(function(){var maps=" + JSON.stringify(maps) + ";var index=" + startIndex + ";var opacity=" + mappingState.opacity + ";var image=document.getElementById('pipImage');var prev=document.getElementById('pipPrev');var next=document.getElementById('pipNext');var close=document.getElementById('pipClose');var opacityInput=document.getElementById('pipOpacity');function render(){image.src=maps[index].src;image.style.opacity=opacity;}prev.onclick=function(){index=(index-1+maps.length)%maps.length;render();};next.onclick=function(){index=(index+1)%maps.length;render();};opacityInput.oninput=function(){opacity=Number(opacityInput.value)/100;image.style.opacity=opacity;};close.onclick=function(){window.close();};render();})();";
+  }
+
+  function overlayCss() {
+    return (
+      collectCss() +
+      ".pip-panel{position:fixed;inset:0;right:auto;bottom:auto;width:100vw;height:100vh;max-height:none;border-radius:0;display:flex;flex-direction:column}" +
+      ".pip-panel .mapping-panel__body{flex:1;max-height:none;overflow:hidden}" +
+      ".pip-panel .mapping-panel__body img{width:100%;height:100%;max-height:none;object-fit:contain}" +
+      ".pip-panel .mapping-panel__controls{flex:none}" +
+      ".pip-panel button svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}"
+    );
+  }
+
+  function openFallbackModal() {
+    var index = mappingState.index;
+    var maps = overlayData();
+    detailOverlay.innerHTML =
+      '<article class="detail-panel mapping-fallback" role="dialog" aria-modal="true" aria-labelledby="mappingFallbackTitle">' +
+        '<button class="detail-close icon-button" type="button" data-close-detail aria-label="关闭"><svg aria-hidden="true"><use href="#icon-close"></use></svg></button>' +
+        '<div class="mapping-fallback__head"><h2 id="mappingFallbackTitle">地图映射</h2><span>当前浏览器不支持置顶悬浮窗，已打开页面内映射</span></div>' +
+        '<img class="detail-image" id="fallbackImage" alt="地图映射图片">' +
+        '<div class="mapping-fallback__controls">' +
+          '<button class="icon-button" type="button" data-fallback-prev aria-label="上一张"><svg aria-hidden="true"><use href="#icon-previous"></use></svg></button>' +
+          '<input id="fallbackOpacity" type="range" min="35" max="100" value="' + Math.round(mappingState.opacity * 100) + '" aria-label="调整透明度">' +
+          '<button class="icon-button" type="button" data-fallback-next aria-label="下一张"><svg aria-hidden="true"><use href="#icon-next"></use></svg></button>' +
+        "</div>" +
+      "</article>";
+    detailOverlay.hidden = false;
+    document.body.classList.add("no-scroll");
+
+    var fallbackImage = detailOverlay.querySelector("#fallbackImage");
+    var fallbackOpacity = detailOverlay.querySelector("#fallbackOpacity");
+
+    function renderFallback() {
+      fallbackImage.src = maps[index].src;
+      fallbackImage.style.opacity = String(mappingState.opacity);
+      fallbackOpacity.value = String(Math.round(mappingState.opacity * 100));
+    }
+
+    renderFallback();
+
+    detailOverlay.querySelector("[data-close-detail]").addEventListener("click", closeDetail);
+    detailOverlay.querySelector("[data-fallback-prev]").addEventListener("click", function () {
+      index = (index - 1 + maps.length) % maps.length;
+      renderFallback();
+    });
+    detailOverlay.querySelector("[data-fallback-next]").addEventListener("click", function () {
+      index = (index + 1) % maps.length;
+      renderFallback();
+    });
+    fallbackOpacity.addEventListener("input", function () {
+      mappingState.opacity = Number(fallbackOpacity.value) / 100;
+      fallbackImage.style.opacity = String(mappingState.opacity);
+    });
+  }
+
+  function openFloatingMapping() {
+    var maps = overlayData();
+    var startIndex = mappingState.index;
+
+    if (!window.documentPictureInPicture || typeof window.documentPictureInPicture.requestWindow !== "function") {
+      openFallbackModal();
+      return;
+    }
+
+    window.documentPictureInPicture.requestWindow({ width: 380, height: 680 }).then(function (pipWindow) {
+      var style = pipWindow.document.createElement("style");
+      style.textContent = overlayCss();
+      pipWindow.document.head.appendChild(style);
+      pipWindow.document.body.innerHTML = overlayHtml(maps, startIndex);
+      var script = pipWindow.document.createElement("script");
+      script.textContent = overlayScript(maps, startIndex);
+      pipWindow.document.body.appendChild(script);
+      closeMapping();
+    }).catch(function () {
+      openFallbackModal();
+    });
+  }
 
   searchInput.addEventListener("input", function () {
     state.query = searchInput.value;
@@ -2155,24 +2062,24 @@ window.MAP_GUIDE_DATA = [
   });
 
   clearSearch.addEventListener("click", function () {
-    searchInput.value = "";
     state.query = "";
+    searchInput.value = "";
     renderGrid();
     searchInput.focus();
   });
 
-  terrainFilters.addEventListener("click", function (event) {
-    const button = event.target.closest("[data-terrain]");
+  shapeFilters.addEventListener("click", function (event) {
+    var button = event.target.closest("[data-shape]");
     if (!button) {
       return;
     }
-    state.terrain = state.terrain === button.dataset.terrain ? "" : button.dataset.terrain;
+    state.shape = state.shape === button.dataset.shape ? "" : button.dataset.shape;
     renderFilters();
     renderGrid();
   });
 
   difficultyFilters.addEventListener("click", function (event) {
-    const button = event.target.closest("[data-difficulty]");
+    var button = event.target.closest("[data-difficulty]");
     if (!button) {
       return;
     }
@@ -2183,7 +2090,7 @@ window.MAP_GUIDE_DATA = [
 
   resetFilters.addEventListener("click", function () {
     state.query = "";
-    state.terrain = "";
+    state.shape = "";
     state.difficulty = "";
     searchInput.value = "";
     renderFilters();
@@ -2191,34 +2098,35 @@ window.MAP_GUIDE_DATA = [
     searchInput.focus();
   });
 
-  overlay.addEventListener("click", function (event) {
-    if (event.target === overlay) {
+  detailOverlay.addEventListener("click", function (event) {
+    if (event.target === detailOverlay) {
       closeDetail();
     }
   });
 
   document.addEventListener("keydown", function (event) {
+    var active = document.activeElement;
+    var isTyping = active && /^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName);
+
     if (event.key === "Escape") {
-      if (!mappingPanel.hidden) {
-        closeMapping();
-      } else if (!overlay.hidden) {
+      if (!detailOverlay.hidden) {
         closeDetail();
+      } else if (mappingState.visible) {
+        closeMapping();
       }
     }
 
-    const target = document.activeElement;
-    const isTyping = target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName);
     if (isTyping) {
       return;
     }
 
     if (event.key.toLowerCase() === "m") {
       event.preventDefault();
-      toggleMapping(currentMappingMap().id);
+      toggleMapping(currentMap().id);
       return;
     }
 
-    if (mappingPanel.hidden) {
+    if (!mappingState.visible) {
       return;
     }
 
