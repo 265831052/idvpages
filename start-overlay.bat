@@ -1,2 +1,2 @@
 @echo off
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0map-overlay.ps1"
+start "" "%~dp0MapOverlay.exe"
