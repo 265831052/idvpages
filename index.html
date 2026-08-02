@@ -97,7 +97,7 @@
       <nav class="site-nav" aria-label="主导航">
         <a href="#map-guide">地图图鉴</a>
         <a href="#mode-guide">模式指南</a>
-        <button type="button" data-mapping-open>
+        <button type="button" data-mapping-v2-open>
           <svg aria-hidden="true"><use href="#icon-map"></use></svg>
           地图映射
         </button>
@@ -186,34 +186,30 @@
   </main>
 
   <div class="detail-overlay" id="detailOverlay" hidden></div>
-  <div class="mapping-panel" id="mappingPanel" hidden>
-    <div class="mapping-panel__head" id="mappingDragHandle">
+  <div class="mapping-panel" id="mappingV2Panel" hidden>
+    <div class="mapping-panel__head" id="mappingV2DragHandle">
       <svg class="mapping-panel__grip" aria-hidden="true"><use href="#icon-grip"></use></svg>
       <span class="mapping-panel__title">地图映射</span>
-      <button class="icon-button" type="button" data-mapping-prev title="上一张" aria-label="上一张地图">
+      <button class="icon-button" type="button" data-mapping-v2-prev title="上一张" aria-label="上一张地图">
         <svg aria-hidden="true"><use href="#icon-previous"></use></svg>
       </button>
-      <button class="icon-button" type="button" data-mapping-next title="下一张" aria-label="下一张地图">
+      <button class="icon-button" type="button" data-mapping-v2-next title="下一张" aria-label="下一张地图">
         <svg aria-hidden="true"><use href="#icon-next"></use></svg>
       </button>
-      <button class="icon-button" type="button" data-mapping-pip title="悬浮窗模式" aria-label="打开悬浮窗模式">
+      <button class="icon-button" type="button" data-mapping-v2-pip title="悬浮窗模式" aria-label="打开悬浮窗模式">
         <svg aria-hidden="true"><use href="#icon-pip"></use></svg>
       </button>
-      <button class="icon-button" type="button" data-mapping-close title="关闭" aria-label="关闭地图映射">
+      <button class="icon-button" type="button" data-mapping-v2-close title="关闭" aria-label="关闭地图映射">
         <svg aria-hidden="true"><use href="#icon-close"></use></svg>
       </button>
     </div>
     <div class="mapping-panel__body">
-      <img id="mappingImage" alt="地图映射图片">
+      <img id="mappingV2Image" alt="地图映射图片">
     </div>
     <div class="mapping-panel__controls">
       <label class="mapping-control">
         <svg aria-hidden="true"><use href="#icon-opacity"></use></svg>
-        <input id="mappingOpacity" type="range" min="35" max="100" value="85" aria-label="调整透明度">
-      </label>
-      <label class="mapping-control">
-        <svg aria-hidden="true"><use href="#icon-size"></use></svg>
-        <input id="mappingSize" type="range" min="60" max="140" value="100" aria-label="调整面板大小">
+        <input id="mappingV2Opacity" type="range" min="35" max="100" value="85" aria-label="调整透明度">
       </label>
     </div>
   </div>
@@ -225,6 +221,6 @@
   </footer>
 
   <script src="data.js?v=8"></script>
-  <script src="app.js?v=8"></script>
+  <script src="app-v2.js?v=1"></script>
 </body>
 </html>
