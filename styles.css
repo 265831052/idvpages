@@ -460,7 +460,7 @@ h1 {
 .map-card__media {
   position: relative;
   display: block;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 3 / 5;
   overflow: hidden;
   background: #14191e;
 }
@@ -508,7 +508,15 @@ h1 {
 
 .map-card__body {
   display: block;
-  padding: 14px;
+  padding: 10px 12px;
+}
+
+.map-card__difficulty {
+  display: block;
+  padding: 2px 0;
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
 }
 
 .map-card__title-row,
@@ -647,13 +655,159 @@ h1 {
 
 .detail-panel {
   position: relative;
-  width: min(920px, 100%);
+  width: min(calc(88vh * 0.54), 100%);
   max-height: 92vh;
   overflow: auto;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--panel);
   box-shadow: var(--shadow);
+}
+
+.detail-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 88vh;
+  object-fit: contain;
+  background: #0b0d0f;
+}
+
+.detail-actions {
+  padding: 12px;
+  background: var(--panel);
+  text-align: center;
+}
+
+.detail-actions .primary-button {
+  width: 100%;
+}
+
+.mapping-fallback__head {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel-2);
+}
+
+.mapping-fallback__head h2 {
+  margin: 0 0 4px;
+  font-size: 18px;
+  letter-spacing: 0;
+}
+
+.mapping-fallback__head span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.mapping-fallback__controls {
+  display: grid;
+  grid-template-columns: 36px 1fr 36px;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border-top: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.mapping-fallback__controls input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.mapping-panel {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 45;
+  width: min(var(--mapping-width, 320px), calc(100vw - 32px));
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.mapping-panel__head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  border-bottom: 1px solid var(--line-soft);
+  background: var(--panel-2);
+  touch-action: none;
+}
+
+.mapping-panel__grip {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  fill: none;
+  stroke: var(--muted-2);
+  stroke-width: 1.5;
+}
+
+.mapping-panel__title {
+  min-width: 0;
+  overflow: hidden;
+  margin-right: auto;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mapping-panel__head .icon-button {
+  width: 30px;
+  height: 30px;
+  border-color: transparent;
+  background: transparent;
+}
+
+.mapping-panel__body {
+  max-height: 62vh;
+  overflow: hidden;
+  background: #0b0d0f;
+}
+
+.mapping-panel__body img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 62vh;
+  object-fit: contain;
+  background: #0b0d0f;
+}
+
+.mapping-panel__controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 10px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.mapping-control {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  align-items: center;
+  gap: 7px;
+}
+
+.mapping-control svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mapping-control input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
 }
 
 .detail-close {
@@ -776,7 +930,8 @@ h1 {
 .toast {
   position: fixed;
   left: 50%;
-  bottom: 24px;
+  top: 20px;
+  bottom: auto;
   z-index: 60;
   transform: translateX(-50%);
   max-width: min(420px, calc(100vw - 32px));
@@ -865,7 +1020,7 @@ h1 {
   }
 
   .detail-panel {
-    width: 100%;
+    width: min(calc(88vh * 0.54), 100%);
     max-height: 92vh;
     border-radius: 10px 10px 0 0;
   }
@@ -882,6 +1037,18 @@ h1 {
   .detail-body {
     padding-left: 18px;
     padding-right: 18px;
+  }
+
+  .mapping-panel {
+    right: 10px;
+    bottom: 10px;
+    left: 10px;
+    width: auto;
+  }
+
+  .mapping-panel__body,
+  .mapping-panel__body img {
+    max-height: 50vh;
   }
 }
 
